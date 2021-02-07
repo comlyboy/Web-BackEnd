@@ -1,4 +1,4 @@
-const app = require("./backend/app");
+const app = require("./app");
 const debug = require("debug")("node-angular");
 const http = require("http");
 
@@ -50,5 +50,6 @@ const server = http.createServer(app);
 server.on("error", onError);
 server.on("listening", onListening);
 server.listen(port, () => {
-  console.log("Server is Online");
+  console.log(`Listening on http://localhost:${port}`);
 });
+
