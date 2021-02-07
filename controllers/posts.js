@@ -57,47 +57,47 @@ exports.updatePost = (req, res, next) => {
     });
 };
 
-exports.getPosts = (req, res, next) => {
+exports.getPosts = async (req, res, next) => {
   const pageSize = +req.query.pagesize;
   const currentPage = +req.query.page;
-  const postQuery = Post.find();
-  let fetchedPosts;
-  if (pageSize && currentPage) {
-    postQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
-  }
-  postQuery
-    .then(documents => {
-      fetchedPosts = documents;
-      return Post.count();
-    })
-    .then(count => {
-      res.status(200).json({
-        message: "Posts fetched successfully!",
-        posts: fetchedPosts,
-        maxPosts: count
-      });
-    })
-    .catch(error => {
-      res.status(500).json({
-        message: "Fetching posts failed!"
-      });
+  try {
+    const postQuery = await Post.find();
+    if (pageSize && currentPage) {
+      postQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
+    }
+    postQuery;
+
+    const totalPost = await Post.countDocuments();
+
+    res.status(200).json({
+      message: "Posts fetched successfully!",
+      posts: postQuery,
+      maxPosts: totalPost
     });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Fetching posts failed!"
+    });
+  }
+
+
 };
 
-exports.getPost = (req, res, next) => {
-  Post.findById(req.params.id)
-    .then(post => {
-      if (post) {
-        res.status(200).json(post);
-      } else {
-        res.status(404).json({ message: "Post not found!" });
-      }
-    })
-    .catch(error => {
-      res.status(500).json({
-        message: "Fetching post failed!"
-      });
+exports.getPost = async(req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found!" });
+    }
+    res.status(200).json(post);
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Fetching post failed!"
     });
+  }
+
 };
 
 exports.deletePost = (req, res, next) => {
